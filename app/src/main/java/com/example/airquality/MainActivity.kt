@@ -1,28 +1,32 @@
 package com.example.airquality
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.airquality.databinding.ActivityMainBinding
 import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
-    
+
     lateinit var binding: ActivityMainBinding
-    
+
     // 런타임 권한 요청 시 필요한 요청 코드
     private val PERMISSIONS_REQUEST_CODE = 100
+
     // 요청할 권한 목록
     var REQUIRED_PERMISSIONS = arrayOf(
         android.Manifest.permission.ACCESS_FINE_LOCATION,
-        android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        android.Manifest.permission.ACCESS_COARSE_LOCATION
+    )
 
     // 위치 서비스 요청 시 필요한 런처
-    lateinit var getGPSpermissionLauncher : ActivityResultLauncher<Intent>
-    
+    lateinit var getGPSpermissionLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -35,27 +39,40 @@ class MainActivity : AppCompatActivity() {
         // 1. 위치 서비스가 켜져 있는지 확인
         if (!isLocationServiceAvailable()) {
             showDialogForLocationServiceSetting();
-        }else{ // 2. 런타임 앱 권한이 모두 허용되어 있는지 확인
+        } else { // 2. 런타임 앱 권한이 모두 허용되어 있는지 확인
             isRunTimePermissionsGranted();
         }
     }
 
-    fun isLocationServiceAvailable() : Boolean {
+    fun isLocationServiceAvailable(): Boolean {
         val locationManager = getSystemService(LOCATION_SERVICE) as
-        LocationManager
+                LocationManager
 
         return (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
     }
 
-    fun isRunTimePermissionsGranted(){
+    fun isRunTimePermissionsGranted() {
         // 위치 권한을 가지고 있는지 체크
         val hasFineLoctionPermission = ContextCompat.checkSelfPermission(
             this@MainActivity,
             android.Manifest.permission.ACCESS_FINE_LOCATION
         )
-
+        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(
+            this@MainActivity,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        if (hasFineLoctionPermission != PackageManager.PERMISSION_GRANTED ||
+            hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED
+        )
+        // 권한이 한 개라도 없다면 권한 요청
+            ActivityCompat.requestPermissions(
+                this@MainActivity,
+                REQUIRED_PERMISSIONS,
+                PERMISSIONS_REQUEST_CODE
+            )
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
