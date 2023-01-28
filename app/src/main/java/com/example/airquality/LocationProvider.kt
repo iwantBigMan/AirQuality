@@ -109,4 +109,4 @@ class LocationProvider(val context: Context) {
     fun getLocationLongitude() : Double {
         return location?.longitude ?: 0.0 // null 이면 0.0 반환
     }
-환}
+}
