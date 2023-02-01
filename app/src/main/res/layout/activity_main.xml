@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="MainActivity">
 
 
     <androidx.constraintlayout.widget.Guideline
@@ -78,7 +78,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="h,1:1"
-        app:flow_vertical_Bias="0.4"/>
+        app:layout_constraintVertical_bias="0.4"/>
 
     <TextView
         android:id="@+id/tv_count"
