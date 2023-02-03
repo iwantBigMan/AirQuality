@@ -1,5 +1,6 @@
 package com.example.airquality
 
+import android.Manifest
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
@@ -38,12 +39,12 @@ class MainActivity : AppCompatActivity() {
 
     // 요청할 권한 목록
     var REQUIRED_PERMISSIONS = arrayOf(
-        android.Manifest.permission.ACCESS_FINE_LOCATION,
-        android.Manifest.permission.ACCESS_COARSE_LOCATION
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
     // 위치 서비스 요청 시 필요한 런처
-    lateinit var getGPSpermissionLauncher: ActivityResultLauncher<Intent>
+    lateinit var getGPSPermissionLauncher: ActivityResultLauncher<Intent>
 
     // 위도와 경도를 가져올 때 필요
     lateinit var locationProvider: LocationProvider
@@ -190,7 +191,7 @@ class MainActivity : AppCompatActivity() {
 
     fun isRunTimePermissionsGranted() {
         // 위치 권한을 가지고 있는지 체크
-        val hasFineLoctionPermission = ContextCompat.checkSelfPermission(
+        val hasFineLocationPermission = ContextCompat.checkSelfPermission(
             this@MainActivity,
             android.Manifest.permission.ACCESS_FINE_LOCATION
         )
@@ -198,7 +199,7 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        if (hasFineLoctionPermission != PackageManager.PERMISSION_GRANTED ||
+        if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED ||
             hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED
         ) {
             // 권한이 한 개라도 없다면 권한 요청
@@ -234,6 +235,7 @@ class MainActivity : AppCompatActivity() {
             }
             if (checkResult) {
                 // 위칫값을 가져올 수 있음
+                updateUI()
             } else {
                 // 권한이 거부되었다면 앱 종료
                 Toast.makeText(
@@ -249,7 +251,7 @@ class MainActivity : AppCompatActivity() {
     private fun showDialogForLocationServiceSetting() {
         // 먼저 ActivityResultLauncher를 설정해줍니다. 이 런처를 이용하여 결괏값을
         // 반환해야 하는 인텐트를 실행할 수 있습니다.
-        getGPSpermissionLauncher = registerForActivityResult(
+        getGPSPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             // 결괏값을 받았을 때 로직
@@ -282,7 +284,7 @@ class MainActivity : AppCompatActivity() {
                 val callGPSSettingIntent = Intent(
                     Settings.ACTION_LOCATION_SOURCE_SETTINGS
                 )
-                getGPSpermissionLauncher.launch(callGPSSettingIntent)
+                getGPSPermissionLauncher.launch(callGPSSettingIntent)
             })
         builder.setNegativeButton("취소", // 취소 버튼 설정
             DialogInterface.OnClickListener { dialog, id ->
