@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -31,6 +33,19 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    // 위도와 경도를 저장
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
+
+    val startMapActivityResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result?.resultCode ?: 0 == Activity.RESULT_OK) {
+                latitude = result?.data?.getDoubleExtra("latitude", 0.0) ?: 0.0
+                longitude = result?.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
+                updateUI()
+            }
+        }
 
     lateinit var binding: ActivityMainBinding
 
@@ -57,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         checkAllPermissions() //권한 확인
         updateUI()
         setRefreshButton()
+        setFab()
     }
 
     private fun setRefreshButton(){
@@ -69,9 +85,10 @@ class MainActivity : AppCompatActivity() {
         locationProvider = LocationProvider(this@MainActivity)
 
         // 위도와 경도 정보를 가져온다.
-        val latitude: Double = locationProvider.getLocationLatitude()
-        val longitude: Double = locationProvider.getLocationLongitude()
-
+        if (latitude == 0.0 || longitude == 0.0) {
+            val latitude: Double = locationProvider.getLocationLatitude()
+            val longitude: Double = locationProvider.getLocationLongitude()
+        }
         if (latitude != 0.0 || longitude != 0.0) {
             // 현재 위치를 가져오고 UI 업데이트
             // 1. 현재 미세먼지 농도 가져오고 UI 업데이트
@@ -331,6 +348,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         return addresses[0]
+    }
+
+    private fun setFab() {
+        binding.fab.setOnClickListener {
+            val intent = Intent(this, MapActivity::class.java)
+            intent.putExtra("currentLat", latitude)
+            intent.putExtra("currentLng", longitude)
+            startMapActivityResult.launch(intent)
+        }
+
     }
 }
 
