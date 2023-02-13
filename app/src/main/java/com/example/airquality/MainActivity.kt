@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     val startMapActivityResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()
         ) { result ->
-            if (result?.resultCode ?: 0 == Activity.RESULT_OK) {
+            if (result?.resultCode ?: Activity.RESULT_CANCELED == Activity.RESULT_OK) {
                 latitude = result?.data?.getDoubleExtra("latitude", 0.0) ?: 0.0
                 longitude = result?.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
                 updateUI()
@@ -86,8 +86,8 @@ class MainActivity : AppCompatActivity() {
 
         // 위도와 경도 정보를 가져온다.
         if (latitude == 0.0 || longitude == 0.0) {
-            val latitude: Double = locationProvider.getLocationLatitude()
-            val longitude: Double = locationProvider.getLocationLongitude()
+            latitude = locationProvider.getLocationLatitude()
+            longitude = locationProvider.getLocationLongitude()
         }
         if (latitude != 0.0 || longitude != 0.0) {
             // 현재 위치를 가져오고 UI 업데이트
@@ -110,6 +110,7 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
     }
+
 
     /**
      * @desc 레트로핏 클래스를 이용하여 미세먼지 오염 정보를 가져온다.
@@ -167,7 +168,7 @@ class MainActivity : AppCompatActivity() {
         binding.tvCheckTime.text = dateTime.format(dateFormatter).toString()
 
         when (pollutionData.aqius){
-            in 0..50 ->{
+            in 0..50 -> {
                 binding.tvTitle.text = "좋음"
                 binding.imgBg.setImageResource(R.drawable.bg_good)
             }
@@ -287,33 +288,23 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        val builder: AlertDialog.Builder = AlertDialog.Builder(
-            this@MainActivity
-        ) // 사용자에게 의사를 물어보는 AlertDialog 생성
-        builder.setTitle("위치 서비스 비활성화") // 제목 설정
-        builder.setMessage(
-            "위치 서비스가 꺼져 있습니다. 설정해야 앱을 사용할 수 있습니다."
-        )
-        // 내용 설정
-        builder.setCancelable(true) // 다이얼로그 창 바깥 터치 시 창 닫힘
-        builder.setPositiveButton("설정", DialogInterface.OnClickListener {
-                dialog, id -> // 확인 버튼 설정
-                val callGPSSettingIntent = Intent(
-                    Settings.ACTION_LOCATION_SOURCE_SETTINGS
-                )
-                getGPSPermissionLauncher.launch(callGPSSettingIntent)
-            })
-        builder.setNegativeButton("취소", // 취소 버튼 설정
-            DialogInterface.OnClickListener { dialog, id ->
-                dialog.cancel()
-                Toast.makeText(
-                    this@MainActivity,
-                    "기기에서 위치서비스(GPS) 설정 후 사용해주세요.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                finish()
-            })
-        builder.create().show() // 다이얼로그 생성 및 보여주기
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this@MainActivity)
+        builder.setTitle("위치 서비스 비활성화")
+        builder.setMessage("위치 서비스가 꺼져있습니다. 설정해야 앱을 사용할 수 있습니다.")
+        builder.setCancelable(true)
+        builder.setPositiveButton("설정", DialogInterface.OnClickListener { dialog, id ->
+            val callGPSSettingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            getGPSPermissionLauncher.launch(callGPSSettingIntent)
+        })
+        builder.setNegativeButton("취소", DialogInterface.OnClickListener { dialog, id ->
+            dialog.cancel()
+            Toast.makeText(
+                this@MainActivity, "기기에서 위치서비스(GPS) 설정 후 사용해주세요.", Toast.LENGTH_SHORT
+            ).show()
+            finish()
+        })
+        builder.create().show()
     }
 
     fun getCurrentAddress(latitude: Double, longitude: Double): Address? {
