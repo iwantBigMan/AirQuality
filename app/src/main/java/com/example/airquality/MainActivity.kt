@@ -11,6 +11,7 @@ import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -23,6 +24,10 @@ import com.example.airquality.databinding.ActivityMainBinding
 import com.example.airquality.retrofit.AirQualityResponse
 import com.example.airquality.retrofit.AirQualityService
 import com.example.airquality.retrofit.RetrofitConnection
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -73,6 +78,7 @@ class MainActivity : AppCompatActivity() {
         updateUI()
         setRefreshButton()
         setFab()
+        setBannerAds()
     }
 
     private fun setRefreshButton(){
@@ -293,11 +299,11 @@ class MainActivity : AppCompatActivity() {
         builder.setTitle("위치 서비스 비활성화")
         builder.setMessage("위치 서비스가 꺼져있습니다. 설정해야 앱을 사용할 수 있습니다.")
         builder.setCancelable(true)
-        builder.setPositiveButton("설정", DialogInterface.OnClickListener { dialog, id ->
+        builder.setPositiveButton("설정", DialogInterface.OnClickListener { _, _ ->
             val callGPSSettingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             getGPSPermissionLauncher.launch(callGPSSettingIntent)
         })
-        builder.setNegativeButton("취소", DialogInterface.OnClickListener { dialog, id ->
+        builder.setNegativeButton("취소", DialogInterface.OnClickListener { dialog, _ ->
             dialog.cancel()
             Toast.makeText(
                 this@MainActivity, "기기에서 위치서비스(GPS) 설정 후 사용해주세요.", Toast.LENGTH_SHORT
@@ -350,6 +356,40 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    /**
+     *  @desc 배너 광고 설정 함수
+     */
+    private fun setBannerAds() {
+        MobileAds.initialize(this)  // 광고 SDK 초기화
+            val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest) //애드뷰에 광고 로드
+
+        // 애드뷰 리스너 추가
+        binding.adView.adListener = object : AdListener(){
+            override fun onAdLoaded() {
+                Log.d("ads log", "배너 광고가 로드되었습니다.") // 로그 출력
+            }
+
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                Log.d("ads log", "배너 광고 로드를 실패했습니다. ${adError.responseInfo}")
+            }
+
+            override fun onAdOpened() {
+                Log.d("ads log", "배너 광고를 열었습니다.")
+                // 전면 광고가 오버레이 되었을
+            }
+
+            override fun onAdClicked() {
+                Log.d("ads log", "배너 광고를 클릭했습니다.")
+            }
+
+            override fun onAdClosed() {
+                Log.d("ads log", "배너 광고를 닫았습니다.")
+            }
+        }
+    }
+
 }
 
 
